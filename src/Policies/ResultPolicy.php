@@ -2,7 +2,7 @@
 
 namespace Studio\Novacron\Policies;
 
-use App\User;
+use Illuminate\Foundation\Auth\User;
 use Studio\Totem\Result;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
@@ -13,7 +13,7 @@ class ResultPolicy
     /**
      * Determine whether the user can view the Result.
      *
-     * @param  \App\User  $user
+     * @param  \Illuminate\Foundation\Auth\User  $user
      * @param  \Studio\Totem\Result  $result
      * @return mixed
      */
@@ -25,7 +25,7 @@ class ResultPolicy
     /**
      * Determine whether the user can create Results.
      *
-     * @param  \App\User  $user
+     * @param  \Illuminate\Foundation\Auth\User  $user
      * @return mixed
      */
     public function create(User $user)
@@ -36,7 +36,7 @@ class ResultPolicy
     /**
      * Determine whether the user can update the Result.
      *
-     * @param  \App\User  $user
+     * @param  \Illuminate\Foundation\Auth\User  $user
      * @param  \Studio\Totem\Result  $result
      * @return mixed
      */
@@ -48,7 +48,7 @@ class ResultPolicy
     /**
      * Determine whether the user can delete the Result.
      *
-     * @param  \App\User  $user
+     * @param  \Illuminate\Foundation\Auth\User  $user
      * @param  \Studio\Totem\Result  $result
      * @return mixed
      */
@@ -60,7 +60,7 @@ class ResultPolicy
     /**
      * Determine whether the user can restore the Result.
      *
-     * @param  \App\User  $user
+     * @param  \Illuminate\Foundation\Auth\User  $user
      * @param  \Studio\Totem\Result  $result
      * @return mixed
      */
@@ -72,7 +72,7 @@ class ResultPolicy
     /**
      * Determine whether the user can permanently delete the Result.
      *
-     * @param  \App\User  $user
+     * @param  \Illuminate\Foundation\Auth\User  $user
      * @param  \Studio\Totem\Result  $result
      * @return mixed
      */
