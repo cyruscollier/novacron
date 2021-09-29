@@ -7,6 +7,7 @@ use Laravel\Nova\Events\ServingNova;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Studio\Novacron\Http\Middleware\Authorize;
+use Studio\Novacron\Observers\TaskObserver;
 
 class ToolServiceProvider extends ServiceProvider
 {
@@ -26,6 +27,7 @@ class ToolServiceProvider extends ServiceProvider
                 Frequency::class,
                 Result::class,
             ]);
+            Studio\Totem\Task::observe(TaskObserver::class);
         });
 
         Nova::serving(function (ServingNova $event) {

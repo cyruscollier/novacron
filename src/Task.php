@@ -2,6 +2,7 @@
 
 namespace Studio\Novacron;
 
+use Laravel\Nova\Fields\Hidden;
 use function is_null;
 use Laravel\Nova\Panel;
 use Studio\Totem\Totem;
@@ -20,6 +21,7 @@ use Studio\Novacron\Actions\DisableTask;
 use Studio\Novacron\Actions\ExecuteTask;
 use Studio\Novacron\Rules\CronExpression;
 use Symfony\Component\Console\Command\Command;
+use Studio\Novacron\Fields\Frequency;
 
 class Task extends Resource
 {
@@ -61,6 +63,7 @@ class Task extends Resource
      */
     public function fields(Request $request)
     {
+        $frequencies = Totem::frequencies();
         return [
             Text::make('Description')
                 ->help('Provide a descriptive name for your task')
@@ -82,15 +85,26 @@ class Task extends Resource
 
             RadioButton::make('Type', 'type')
                 ->options([
-                    'cron' => ['Cron Expression' => 'Use a cron expression'],
-                    'frequency' => ['Frequencies' => 'Use predefined frequencies. You can add/edit frequencies from details view'],
+                    'cron' => 'Cron Expression',
+                    'frequency' => 'Frequency',
                 ])
                 ->stack()
                 ->hideFromIndex()
                 ->toggle([
                     'frequency' => ['expression'],
+                    'cron' => ['frequencies'],
                 ])
-                ->default(! is_null($this->expression) ? 'cron' : 'frequency'),
+                ->default(!empty($this->expression) ? 'cron' : 'frequency')
+                ->fillUsing(fn() => null)
+                ->resolveUsing(fn($value, $resource) => !empty($resource->expression) ? 'cron' : 'frequency'),
+
+            Select::make('Frequency', 'frequencies')
+                ->withMeta(['parameters' => $this->parameters, 'frequencies' => $frequencies])
+                ->options(collect($frequencies)->mapWithKeys(function ($item) {
+                    return [$item['interval'] => $item['label']];
+                })->toArray())
+                ->fillUsing(fn() => null)
+                ->resolveUsing(fn($value, $resource) => $resource->frequencies()->pluck('interval')->first()),
 
             Text::make('Cron Expression', 'expression')
                 ->help('Provide a descriptive name for your task')
@@ -98,6 +112,8 @@ class Task extends Resource
                 ->rules(['nullable', 'required_if:type,cron', new CronExpression]),
 
             Select::make('Timezone', 'tz')
+                ->resolveUsing(fn($value, $resource) => $resource->id ? $resource->timezone : null)
+                ->fillUsing(fn($request, $model, $attribute) => $model->timezone = $request->input($attribute))
                 ->help('Select a timezone for your task. App timezone is selected by default')
                 ->rules(['required'])
                 ->hideFromIndex()
@@ -110,10 +126,6 @@ class Task extends Resource
             new Panel('Server Settings', $this->configurationFields()),
             new Panel('Old Results Cleanup', $this->cleanupFields()),
 
-            HasMany::make('Frequencies')
-                ->canSee(function () {
-                    return $this->type == 'frequency';
-                }),
             HasMany::make('Results'),
         ];
     }
@@ -206,7 +218,7 @@ class Task extends Resource
                 ->hideFromIndex(),
 
             Number::make('Auto cleanup threshold', 'auto_cleanup_num')
-                ->withMeta(['value' => $this->auto_cleanup_num.'' ?? '0'])
+                ->default(0)
                 ->help('Cleanup threshold. Set non-zero value to enable.')
                 ->hideFromIndex(),
         ];
