@@ -27,7 +27,7 @@ class ToolServiceProvider extends ServiceProvider
                 Frequency::class,
                 Result::class,
             ]);
-            Studio\Totem\Task::observe(TaskObserver::class);
+            \Studio\Totem\Task::observe(TaskObserver::class);
         });
 
         Nova::serving(function (ServingNova $event) {
