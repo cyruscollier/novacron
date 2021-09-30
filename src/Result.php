@@ -51,8 +51,9 @@ class Result extends Resource
         return [
             Code::make('Result')
                 ->onlyOnDetail(),
-            DateTime::make('Executed At', 'ran_at')
-                ->onlyOnIndex(),
+            Text::make('Executed At', function() {
+                return $this->ran_at->shiftTimezone('UTC')->tz(config('app.timezone'))->toDateTimeString();
+            })->onlyOnIndex(),
             Text::make('Duration', function () {
                 return number_format($this->duration / 1000, 2).' seconds';
             })->onlyOnIndex(),

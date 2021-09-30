@@ -95,16 +95,24 @@ class Task extends Resource
                     'cron' => ['frequencies'],
                 ])
                 ->default(!empty($this->expression) ? 'cron' : 'frequency')
-                ->fillUsing(fn() => null)
-                ->resolveUsing(fn($value, $resource) => !empty($resource->expression) ? 'cron' : 'frequency'),
+                ->fillUsing(function () {
+                    return null;
+                })
+                ->resolveUsing(function ($value, $resource) {
+                    return !empty($resource->expression) ? 'cron' : 'frequency';
+                }),
 
             Select::make('Frequency', 'frequencies')
                 ->withMeta(['parameters' => $this->parameters, 'frequencies' => $frequencies])
                 ->options(collect($frequencies)->mapWithKeys(function ($item) {
                     return [$item['interval'] => $item['label']];
                 })->toArray())
-                ->fillUsing(fn() => null)
-                ->resolveUsing(fn($value, $resource) => $resource->frequencies()->pluck('interval')->first()),
+                ->fillUsing(function () {
+                    return null;
+                })
+                ->resolveUsing(function ($value, $resource) {
+                    return $resource->frequencies()->pluck('interval')->first();
+                }),
 
             Text::make('Cron Expression', 'expression')
                 ->help('Provide a descriptive name for your task')
@@ -112,8 +120,12 @@ class Task extends Resource
                 ->rules(['nullable', 'required_if:type,cron', new CronExpression]),
 
             Select::make('Timezone', 'tz')
-                ->resolveUsing(fn($value, $resource) => $resource->id ? $resource->timezone : null)
-                ->fillUsing(fn($request, $model, $attribute) => $model->timezone = $request->input($attribute))
+                ->resolveUsing(function ($value, $resource) {
+                    return $resource->id ? $resource->timezone : null;
+                })
+                ->fillUsing(function ($request, $model, $attribute) use ($request) {
+                    return $model->timezone = $request->input($attribute);
+                })
                 ->help('Select a timezone for your task. App timezone is selected by default')
                 ->rules(['required'])
                 ->hideFromIndex()
@@ -153,7 +165,7 @@ class Task extends Resource
 
             Text::make('Last Run', function () {
                 if ($last = $this->lastResult) {
-                    return $last->ran_at->toDateTimeString();
+                    return $last->ran_at->shiftTimezone('UTC')->tz(config('app.timezone'))->toDateTimeString();
                 }
 
                 return 'N/A';
