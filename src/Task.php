@@ -123,8 +123,8 @@ class Task extends Resource
                 ->resolveUsing(function ($value, $resource) {
                     return $resource->id ? $resource->timezone : null;
                 })
-                ->fillUsing(function ($request, $model, $attribute) use ($request) {
-                    return $model->timezone = $request->input($attribute);
+                ->fillUsing(function ($request, $model, $attribute) {
+                    $model->timezone = $request->input($attribute);
                 })
                 ->help('Select a timezone for your task. App timezone is selected by default')
                 ->rules(['required'])
